@@ -1,6 +1,6 @@
-from Class/CiscoMenu.py import CiscoMenu
+from Class.CiscoMenu import CiscoMenu
 
-def main:
+def main():
     menu = CiscoMenu()
     menu.run()
     
