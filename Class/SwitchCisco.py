@@ -71,3 +71,8 @@ class SwitchCisco:
 		self.desloguearse()
 		print(self.tn.read_all().decode('ascii'))
 
+	def grabar_cambios(self):
+		self.loguearse_su()
+		self.enviar_comando("write")
+		self.desloguearse()
+		print(self.tn.read_all().decode('ascii'))

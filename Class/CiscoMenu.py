@@ -24,17 +24,23 @@ class CiscoMenu:
 		self.sw.reiniciar_interface(n_interfase)
 		self.scrw.wait()
 
+	def mostrar_menu_grabar_cambios(self):
+		self.scrw.clear()
+		self.sw.grabar_cambios()
+		self.scrw.wait()
+
 	def mostrar_menu_principal(self):
 		opcion = -1
 		while opcion != 0:
 			opcion = -1
-			while opcion < 0 or opcion > 3:
+			while opcion < 0 or opcion > 4:
 				self.scrw.clear()
 				self.scrw.write("Cisco Switch Tools")
 				self.scrw.write("-------------------------------------------")
 				self.scrw.write("1 - Listar VLANs")
 				self.scrw.write("2 - Cambiar la VLAN de una interfase")
 				self.scrw.write("3 - Reiniciar una interfase")
+				self.scrw.write("4 - Grabar cambios")
 				self.scrw.write("-------------------------------------------")
 				self.scrw.write("0 - Salir")
 				self.scrw.write("")
@@ -45,6 +51,8 @@ class CiscoMenu:
 				self.mostrar_menu_cambiar_vlan_de_una_interfase()
 			if opcion == 3:
 				self.mostrar_menu_reiniciar_interfase()
+			if opcion == 4:
+				self.mostrar_menu_grabar_cambios()
 
 	def mostrar_portada(self):
 		self.scrw.clear()
