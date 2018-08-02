@@ -35,6 +35,13 @@ class CiscoMenu:
 		self.scrw.clear()
 		self.sw.grabar_cambios()
 		self.scrw.wait()
+		
+	def mostrar_menu_exportar_configuracion(self):
+		self.scrw.clear()
+		nombre_archivo = self.sw.obtener_nombre() + ".txt"
+		self.scrw.write("Archivo " + nombre_archivo + "generado.")
+		self.sw.exportar_configuracion()
+		self.scrw.wait()
 
 	def mostrar_menu_principal(self):
 		sw_nombre = self.sw.obtener_nombre()
@@ -42,7 +49,7 @@ class CiscoMenu:
 		opcion = -1
 		while opcion != 0:
 			opcion = -1
-			while opcion < 0 or opcion > 4:
+			while opcion < 0 or opcion > 6:
 				self.scrw.clear()
 				self.scrw.write("Cisco Switch Tools                           ")
 				self.scrw.write("Conectado a " + sw_ip + " (" + sw_nombre + ")")
@@ -52,6 +59,7 @@ class CiscoMenu:
 				self.scrw.write("3 - Reiniciar una interfase                  ")
 				self.scrw.write("4 - Buscar una direccion MAC                 ")
 				self.scrw.write("5 - Grabar cambios                           ")
+				self.scrw.write("6 - Exportar archivo de configuración        ")
 				self.scrw.write("─────────────────────────────────────────────")
 				self.scrw.write("0 - Salir")
 				self.scrw.write("")
@@ -66,6 +74,8 @@ class CiscoMenu:
 				self.mostrar_menu_buscar_mac()
 			if opcion == 5:
 				self.mostrar_menu_grabar_cambios()
+			if opcion == 6:
+				self.mostrar_menu_exportar_configuracion()
 
 	def mostrar_portada(self):
 		self.scrw.clear()

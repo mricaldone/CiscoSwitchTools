@@ -97,12 +97,30 @@ class SwitchCisco:
 		for i in range(LOOP_LIMIT):
 			line = self.tn.read_until(b"\n").decode("ascii")
 			print(line.replace('\n',''))
-			if self.name in line:
+			if line.startswith(self.name):
 				break
 			self.tn.write(b"\r\n")
 		self.desloguearse()
 		print(self.tn.read_all().decode('ascii'))
 
+	def exportar_configuracion(self):
+		self.loguearse_su()
+		self.tn.write(b"show run\n")
+		print(self.tn.read_until(b"\n").decode("ascii"))
+		print(self.tn.read_until(b"\n").decode("ascii"))
+		print(self.tn.read_until(b"\n").decode("ascii"))
+		print(self.tn.read_until(b"\n").decode("ascii"))
+		f = open(self.name + ".txt","w+")
+		for i in range(LOOP_LIMIT):
+			line = self.tn.read_until(b"\n").decode("ascii")
+			f.write(line.replace(" --More--         ",""))
+			if line.startswith(self.name):
+				break
+			self.tn.write(b"\r\n")
+		f.close()
+		self.desloguearse()
+		print(self.tn.read_all().decode('ascii'))
+		
 	def grabar_cambios(self):
 		self.loguearse_su()
 		self.enviar_comando("write")
