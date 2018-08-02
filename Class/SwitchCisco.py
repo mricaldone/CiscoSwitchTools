@@ -1,11 +1,28 @@
 import sys
 import telnetlib
 
+LOOP_LIMIT = 1000
+
 class SwitchCisco:
 
 	def __init__(self, ip, psw):
 		self.ip = ip
 		self.psw = psw
+		self.name = self.generar_nombre()
+
+	def generar_nombre(self):
+		self.loguearse()
+		self.tn.write(b"\n")
+		self.tn.read_until(b"\n")
+		nombre = self.tn.read_until(b"\n").decode("ascii").replace('\n','').replace('\r','').replace('>','')
+		self.desloguearse()
+		return nombre
+	
+	def obtener_nombre(self):
+		return self.name
+	
+	def obtener_ip(self):
+		return self.ip
 
 	def enviar_comando(self, cmd):
 		self.tn.write(cmd.encode('ascii') + b"\n")
@@ -63,11 +80,23 @@ class SwitchCisco:
 		self.desloguearse()
 		print(self.tn.read_all().decode('ascii'))
 
+	def buscar_mac(self, mac_address):
+		self.loguearse()
+		self.enviar_comando("show mac address-table address " + mac_address)
+		self.desloguearse()
+		print(self.tn.read_all().decode('ascii'))
+		
 	def listar_vlans(self):
 		self.loguearse()
-		self.enviar_comando("show vlan")
-		self.tn.write(b"\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r")
-		self.enviar_comando("")
+		self.tn.write(b"show vlan\n")
+		print(self.tn.read_until(b"\n").decode("ascii"))
+		print(self.tn.read_until(b"\n").decode("ascii"))
+		for i in range(LOOP_LIMIT):
+			line = self.tn.read_until(b"\n").decode("ascii")
+			print(line.replace('\n',''))
+			if self.name in line:
+				break
+			self.tn.write(b"\r\n")
 		self.desloguearse()
 		print(self.tn.read_all().decode('ascii'))
 
