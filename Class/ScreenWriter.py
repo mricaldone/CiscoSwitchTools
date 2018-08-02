@@ -12,7 +12,7 @@ class ScreenWriter:
 	def input(self, msg):
 		return input(msg)
 
-	def input_password(self, msg):
+	def input_password(self):
 		return getpass.getpass()
 
 	def wait(self):

@@ -1,5 +1,6 @@
 import sys
 import telnetlib
+from .Exceptions.WrongPasswordError import WrongPasswordError
 
 LOOP_LIMIT = 1000
 
@@ -15,6 +16,8 @@ class SwitchCisco:
 		self.tn.write(b"\n")
 		self.tn.read_until(b"\n")
 		nombre = self.tn.read_until(b"\n").decode("ascii").replace('\n','').replace('\r','').replace('>','')
+		if "Password" in nombre:
+			raise WrongPasswordError
 		self.desloguearse()
 		return nombre
 	
