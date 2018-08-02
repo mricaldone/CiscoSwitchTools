@@ -34,7 +34,7 @@ class SwitchCisco:
 	def leer_linea(self):
 		return self.tn.read_until("\n".encode("ascii")).decode("ascii")
 	
-	def leer_lineas(self):
+	def leer_todo(self):
 		return self.tn.read_all().decode("ascii")
 
 	def desloguearse(self):
@@ -57,7 +57,7 @@ class SwitchCisco:
 		self.enviar_comando("shutdown")
 		self.enviar_comando("end")
 		self.desloguearse()
-		print(self.leer_lineas())
+		print(self.leer_todo())
 
 	def encender_interface(self, interface):
 		self.loguearse_su()
@@ -66,7 +66,7 @@ class SwitchCisco:
 		self.enviar_comando("no shutdown")
 		self.enviar_comando("end")
 		self.desloguearse()
-		print(self.leer_lineas())
+		print(self.leer_todo())
 
 	def reiniciar_interface(self, interface):
 		self.loguearse_su()
@@ -79,7 +79,7 @@ class SwitchCisco:
 		self.enviar_comando("no shutdown")
 		self.enviar_comando("end")
 		self.desloguearse()
-		print(self.leer_lineas())
+		print(self.leer_todo())
 
 	def cambiar_interface_de_vlan(self, interface, vlan):
 		self.loguearse_su()
@@ -88,13 +88,13 @@ class SwitchCisco:
 		self.enviar_comando("switchport access vlan " + vlan)
 		self.enviar_comando("end")
 		self.desloguearse()
-		print(self.leer_lineas())
+		print(self.leer_todo())
 
 	def buscar_mac(self, mac_address):
 		self.loguearse()
 		self.enviar_comando("show mac address-table address " + mac_address)
 		self.desloguearse()
-		print(self.leer_lineas())
+		print(self.leer_todo())
 		
 	def listar_vlans(self):
 		self.loguearse()
@@ -108,7 +108,7 @@ class SwitchCisco:
 				break
 			self.enviar_comando("\r")
 		self.desloguearse()
-		print(self.leer_lineas())
+		print(self.leer_todo())
 
 	def exportar_configuracion(self):
 		self.loguearse_su()
@@ -126,10 +126,10 @@ class SwitchCisco:
 			self.enviar_comando("\r")
 		f.close()
 		self.desloguearse()
-		print(self.leer_lineas())
+		print(self.leer_todo())
 		
 	def grabar_cambios(self):
 		self.loguearse_su()
 		self.enviar_comando("write")
 		self.desloguearse()
-		print(self.leer_lineas())
+		print(self.leer_todo())
