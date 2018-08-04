@@ -76,6 +76,7 @@ class CiscoMenu:
 				self.mostrar_menu_grabar_cambios()
 			if opcion == 6:
 				self.mostrar_menu_exportar_configuracion()
+		self.scrw.clear()
 
 	def mostrar_portada(self):
 		self.scrw.clear()

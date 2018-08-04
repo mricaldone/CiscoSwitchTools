@@ -3,6 +3,7 @@ import telnetlib
 from .Exceptions.WrongPasswordError import WrongPasswordError
 
 LOOP_LIMIT = 1000
+READ_TIMEOUT = 5000
 
 class SwitchCisco:
 
@@ -32,7 +33,7 @@ class SwitchCisco:
 		self.tn.write(cmd.encode("ascii"))
 	
 	def leer_linea(self):
-		return self.tn.read_until("\n".encode("ascii")).decode("ascii")
+		return self.tn.read_until("\n".encode("ascii"), READ_TIMEOUT).decode("ascii")
 	
 	def leer_todo(self):
 		return self.tn.read_all().decode("ascii")
@@ -108,7 +109,6 @@ class SwitchCisco:
 				break
 			self.enviar_comando("\r")
 		self.desloguearse()
-		print(self.leer_todo())
 
 	def exportar_configuracion(self):
 		self.loguearse_su()
@@ -119,14 +119,15 @@ class SwitchCisco:
 		print(self.leer_linea())
 		f = open(self.name + ".txt","w+")
 		for i in range(LOOP_LIMIT):
-			line = self.leer_linea()
-			f.write(line.replace(" --More--         ",""))
+			line = self.leer_linea().replace("--More--","").replace("\x08","").strip()
+			print(line)
+			if not line.startswith("Building") and not line.startswith("!") and not line.startswith("Current") and not line.startswith(self.name):
+				f.write(line + "\n")
 			if line.startswith(self.name):
 				break
 			self.enviar_comando("\r")
 		f.close()
 		self.desloguearse()
-		print(self.leer_todo())
 		
 	def grabar_cambios(self):
 		self.loguearse_su()
