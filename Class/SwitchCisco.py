@@ -11,6 +11,7 @@ class SwitchCisco:
 		self.ip = ip
 		self.psw = psw
 		self.name = self.generar_nombre()
+		self.mac = self.generar_mac_address()
 
 	def generar_nombre(self):
 		self.loguearse()
@@ -22,11 +23,31 @@ class SwitchCisco:
 		self.desloguearse()
 		return nombre
 	
+	def generar_mac_address(self):
+		mac_address = ""
+		self.loguearse()
+		self.enviar_comando("show version")
+		self.leer_linea()
+		self.leer_linea()
+		for i in range(LOOP_LIMIT):
+			line = self.leer_linea().replace("--More--","").replace("\x08","").strip()
+			if line.startswith("Base ethernet"):
+				mac_address = ":".join(line.split(":")[1:])
+				break
+			if line.startswith(self.name + ">"):
+				break
+			self.enviar_comando("\r")
+		self.desloguearse()
+		return mac_address
+	
 	def obtener_nombre(self):
 		return self.name
 	
 	def obtener_ip(self):
 		return self.ip
+	
+	def obtener_mac_address(self):
+		return self.mac
 
 	def enviar_comando(self, cmd):
 		cmd = cmd + "\n"

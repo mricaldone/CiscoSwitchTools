@@ -46,6 +46,7 @@ class CiscoMenu:
 	def mostrar_menu_principal(self):
 		sw_nombre = self.sw.obtener_nombre()
 		sw_ip = self.sw.obtener_ip()
+		sw_mac = self.sw.obtener_mac_address()
 		opcion = -1
 		while opcion != 0:
 			opcion = -1
@@ -53,6 +54,7 @@ class CiscoMenu:
 				self.scrw.clear()
 				self.scrw.write("Cisco Switch Tools                           ")
 				self.scrw.write("Conectado a " + sw_ip + " (" + sw_nombre + ")")
+				self.scrw.write("MAC Address: " + sw_mac + "                  ")
 				self.scrw.write("─────────────────────────────────────────────")
 				self.scrw.write("1 - Listar VLANs                             ")
 				self.scrw.write("2 - Cambiar la VLAN de una interfase         ")
