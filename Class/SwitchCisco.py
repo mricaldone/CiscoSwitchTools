@@ -23,20 +23,42 @@ class SwitchCisco:
 		self.desloguearse()
 		return nombre
 	
+	def enviar_comando_y_leer(self, cmd):
+		txt = ""
+		cmd = cmd + "\n"
+		self.tn.write(cmd.encode("ascii"))
+		txt = txt + self.tn.read_until("\n".encode("ascii")).decode("ascii") + "\n"
+		txt = txt + self.tn.read_until("\n".encode("ascii")).decode("ascii") + "\n"
+		for i in range(LOOP_LIMIT):
+			data = self.tn.expect([" --More-- ".encode("ascii"), (self.name + ">").encode("ascii"), (self.name + "#").encode("ascii")], READ_TIMEOUT)
+			line = data[2].decode("ascii").replace("--More--","").replace("\x08","").strip()
+			txt = txt + line + "\n"
+			if data[0] == 0:
+				self.tn.write("\r\n".encode("ascii"))
+			if data[0] == -1 or data[0] == 1 or data[0] == 2:
+				break
+		#print(txt)#BORRAR
+		return txt
+	
 	def generar_mac_address(self):
 		mac_address = ""
 		self.loguearse()
-		self.enviar_comando("show version")
-		self.leer_linea()
-		self.leer_linea()
-		for i in range(LOOP_LIMIT):
-			line = self.leer_linea().replace("--More--","").replace("\x08","").strip()
-			if line.startswith("Base ethernet"):
+		lines = self.enviar_comando_y_leer("show version").split("\n")
+		for line in lines:
+			if line.startswith("Base ethernet MAC Address"):
 				mac_address = ":".join(line.split(":")[1:])
 				break
-			if line.startswith(self.name + ">"):
-				break
-			self.enviar_comando("\r")
+		#self.enviar_comando("show version")
+		#self.leer_linea()
+		#self.leer_linea()
+		#for i in range(LOOP_LIMIT):
+		#	line = self.leer_linea().replace("--More--","").replace("\x08","").strip()
+		#	if line.startswith("Base ethernet"):
+		#		mac_address = ":".join(line.split(":")[1:])
+		#		break
+		#	if line.startswith(self.name + ">"):
+		#		break
+		#	self.enviar_comando("\r")
 		self.desloguearse()
 		return mac_address
 	
@@ -120,34 +142,40 @@ class SwitchCisco:
 		
 	def listar_vlans(self):
 		self.loguearse()
-		self.enviar_comando("show vlan")
-		print(self.leer_linea())
-		print(self.leer_linea())
-		for i in range(LOOP_LIMIT):
-			line = self.leer_linea()
-			print(line.replace('\n',''))
-			if line.startswith(self.name):
-				break
-			self.enviar_comando("\r")
+		lines = self.enviar_comando_y_leer("show vlan").split("\n")
+		for line in lines:
+			print(line)
+		#self.enviar_comando("show vlan")
+		#print(self.leer_linea())
+		#print(self.leer_linea())
+		#for i in range(LOOP_LIMIT):
+		#	line = self.leer_linea()
+		#	print(line.replace('\n',''))
+		#	if line.startswith(self.name):
+		#		break
+		#	self.enviar_comando("\r")
 		self.desloguearse()
 
 	def exportar_configuracion(self):
 		self.loguearse_su()
-		self.enviar_comando("show run")
-		print(self.leer_linea())
-		print(self.leer_linea())
-		print(self.leer_linea())
-		print(self.leer_linea())
-		f = open(self.name + ".txt","w+")
-		for i in range(LOOP_LIMIT):
-			line = self.leer_linea().replace("--More--","").replace("\x08","").strip()
+		lines = self.enviar_comando_y_leer("show run").split("\n")
+		for line in lines:
 			print(line)
-			if not line.startswith("Building") and not line.startswith("!") and not line.startswith("Current") and not line.startswith(self.name):
-				f.write(line + "\n")
-			if line.startswith(self.name):
-				break
-			self.enviar_comando("\r")
-		f.close()
+		#self.enviar_comando("show run")
+		#print(self.leer_linea())
+		#print(self.leer_linea())
+		#print(self.leer_linea())
+		#print(self.leer_linea())
+		#f = open(self.name + ".txt","w+")
+		#for i in range(LOOP_LIMIT):
+		#	line = self.leer_linea().replace("--More--","").replace("\x08","").strip()
+		#	print(line)
+		#	if not line.startswith("Building") and not line.startswith("!") and not line.startswith("Current") and not line.startswith(self.name):
+		#		f.write(line + "\n")
+		#	if line.startswith(self.name):
+		#		break
+		#	self.enviar_comando("\r")
+		#f.close()
 		self.desloguearse()
 		
 	def grabar_cambios(self):
