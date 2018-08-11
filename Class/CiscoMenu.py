@@ -4,8 +4,9 @@ from .Exceptions.WrongPasswordError import WrongPasswordError
 
 class CiscoMenu:
 
-	def __init__(self):
+	def __init__(self, ip = None):
 		self.scrw = ScreenWriter()
+		self.ip = ip
 
 	def mostrar_menu_listar_vlans(self):
 		self.scrw.clear()
@@ -94,10 +95,13 @@ class CiscoMenu:
 
 	def mostrar_formulario_de_conexion(self):
 		self.scrw.clear()
-		ip = self.scrw.input("IP del switch: ")
+		if self.ip == None:
+			self.ip = self.scrw.input("IP del switch: ")
+		else:
+			self.scrw.write("Conectando a IP: " + self.ip)
 		psw = self.scrw.input_password()
 		try:
-			self.sw = SwitchCisco(ip, psw)
+			self.sw = SwitchCisco(self.ip, psw)
 		except TimeoutError as e:
 			self.scrw.write("Error de conexión.")
 			exit()

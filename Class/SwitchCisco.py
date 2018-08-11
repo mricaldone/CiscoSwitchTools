@@ -1,49 +1,35 @@
 import sys
 import telnetlib
 from .Exceptions.WrongPasswordError import WrongPasswordError
+from .CiscoTelnet import CiscoTelnet
 
 LOOP_LIMIT = 1000
-READ_TIMEOUT = 5000
 
 class SwitchCisco:
 
 	def __init__(self, ip, psw):
 		self.ip = ip
 		self.psw = psw
-		self.name = self.generar_nombre()
-		self.mac = self.generar_mac_address()
+		self.telnet = CiscoTelnet(ip)
+		#self.name = self.generar_nombre()
+		#self.mac = self.generar_mac_address()	
+		self.name = ""
+		self.mac = ""
 
 	def generar_nombre(self):
 		self.loguearse()
-		self.enviar_comando("")
-		self.leer_linea()
-		nombre = self.leer_linea().replace('\n','').replace('\r','').replace('>','')
+		self.telnet.enviar_comando("")
+		self.telnet.leer_linea()
+		nombre = self.telnet.leer_linea().replace('\n','').replace('\r','').replace('>','')
 		if "Password" in nombre:
 			raise WrongPasswordError
 		self.desloguearse()
 		return nombre
 	
-	def enviar_comando_y_leer(self, cmd):
-		txt = ""
-		cmd = cmd + "\n"
-		self.tn.write(cmd.encode("ascii"))
-		txt = txt + self.tn.read_until("\n".encode("ascii")).decode("ascii") + "\n"
-		txt = txt + self.tn.read_until("\n".encode("ascii")).decode("ascii") + "\n"
-		for i in range(LOOP_LIMIT):
-			data = self.tn.expect([" --More-- ".encode("ascii"), (self.name + ">").encode("ascii"), (self.name + "#").encode("ascii")], READ_TIMEOUT)
-			line = data[2].decode("ascii").replace("--More--","").replace("\x08","").strip()
-			txt = txt + line + "\n"
-			if data[0] == 0:
-				self.tn.write("\r\n".encode("ascii"))
-			if data[0] == -1 or data[0] == 1 or data[0] == 2:
-				break
-		#print(txt)#BORRAR
-		return txt
-	
 	def generar_mac_address(self):
 		mac_address = ""
 		self.loguearse()
-		lines = self.enviar_comando_y_leer("show version").split("\n")
+		lines = self.telnet.enviar_comando_y_leer("show version").split("\n")
 		for line in lines:
 			if line.startswith("Base ethernet MAC Address"):
 				mac_address = ":".join(line.split(":")[1:])
@@ -71,37 +57,28 @@ class SwitchCisco:
 	def obtener_mac_address(self):
 		return self.mac
 
-	def enviar_comando(self, cmd):
-		cmd = cmd + "\n"
-		self.tn.write(cmd.encode("ascii"))
-	
-	def leer_linea(self):
-		return self.tn.read_until("\n".encode("ascii"), READ_TIMEOUT).decode("ascii")
-	
-	def leer_todo(self):
-		return self.tn.read_all().decode("ascii")
-
 	def desloguearse(self):
-		self.enviar_comando("exit")
+		self.telnet.enviar_comando("exit")
+		self.telnet.desconectarse()
 
 	def loguearse(self):
-		self.tn = telnetlib.Telnet(self.ip)
-		self.tn.read_until("Password: ".encode("ascii"))
-		self.enviar_comando(self.psw)
+		self.telnet = CiscoTelnet(self.ip)
+		self.telnet.esperar_contrasenya()
+		self.telnet.enviar_comando(self.psw)
 
 	def loguearse_su(self):
 		self.loguearse()
-		self.enviar_comando("enable")
-		self.enviar_comando(self.psw)
+		self.telnet.enviar_comando("enable")
+		self.telnet.enviar_comando(self.psw)
 
 	def apagar_interface(self, interface):
 		self.loguearse_su()
-		self.enviar_comando("configure terminal")
-		self.enviar_comando("interface fastethernet 0/" + interface)
-		self.enviar_comando("shutdown")
-		self.enviar_comando("end")
+		self.telnet.enviar_comando("configure terminal")
+		self.telnet.enviar_comando("interface fastethernet 0/" + interface)
+		self.telnet.enviar_comando("shutdown")
+		self.telnet.enviar_comando("end")
 		self.desloguearse()
-		print(self.leer_todo())
+		print(self.telnet.leer_todo())
 
 	def encender_interface(self, interface):
 		self.loguearse_su()
@@ -110,39 +87,39 @@ class SwitchCisco:
 		self.enviar_comando("no shutdown")
 		self.enviar_comando("end")
 		self.desloguearse()
-		print(self.leer_todo())
+		print(self.telnet.leer_todo())
 
 	def reiniciar_interface(self, interface):
 		self.loguearse_su()
-		self.enviar_comando("configure terminal")
-		self.enviar_comando("interface fastethernet 0/" + interface)
-		self.enviar_comando("shutdown")
-		self.enviar_comando("end")
-		self.enviar_comando("configure terminal")
-		self.enviar_comando("interface fastethernet 0/" + interface)
-		self.enviar_comando("no shutdown")
-		self.enviar_comando("end")
+		self.telnet.enviar_comando("configure terminal")
+		self.telnet.enviar_comando("interface fastethernet 0/" + interface)
+		self.telnet.enviar_comando("shutdown")
+		self.telnet.enviar_comando("end")
+		self.telnet.enviar_comando("configure terminal")
+		self.telnet.enviar_comando("interface fastethernet 0/" + interface)
+		self.telnet.enviar_comando("no shutdown")
+		self.telnet.enviar_comando("end")
 		self.desloguearse()
-		print(self.leer_todo())
+		print(self.telnet.leer_todo())
 
 	def cambiar_interface_de_vlan(self, interface, vlan):
 		self.loguearse_su()
-		self.enviar_comando("configure terminal")
-		self.enviar_comando("interface fastethernet 0/" + interface)
-		self.enviar_comando("switchport access vlan " + vlan)
-		self.enviar_comando("end")
+		self.telnet.enviar_comando("configure terminal")
+		self.telnet.enviar_comando("interface fastethernet 0/" + interface)
+		self.telnet.enviar_comando("switchport access vlan " + vlan)
+		self.telnet.enviar_comando("end")
 		self.desloguearse()
-		print(self.leer_todo())
+		print(self.telnet.leer_todo())
 
 	def buscar_mac(self, mac_address):
 		self.loguearse()
-		self.enviar_comando("show mac address-table address " + mac_address)
+		self.telnet.enviar_comando("show mac address-table address " + mac_address)
 		self.desloguearse()
-		print(self.leer_todo())
+		print(self.telnet.leer_todo())
 		
 	def listar_vlans(self):
 		self.loguearse()
-		lines = self.enviar_comando_y_leer("show vlan").split("\n")
+		lines = self.telnet.enviar_comando_y_leer("show vlan brief").split("\n")
 		for line in lines:
 			print(line)
 		#self.enviar_comando("show vlan")
@@ -158,7 +135,7 @@ class SwitchCisco:
 
 	def exportar_configuracion(self):
 		self.loguearse_su()
-		lines = self.enviar_comando_y_leer("show run").split("\n")
+		lines = self.telnet.enviar_comando_y_leer("show run").split("\n")
 		for line in lines:
 			print(line)
 		#self.enviar_comando("show run")
@@ -180,6 +157,6 @@ class SwitchCisco:
 		
 	def grabar_cambios(self):
 		self.loguearse_su()
-		self.enviar_comando("write")
+		self.telnet.enviar_comando("write")
 		self.desloguearse()
-		print(self.leer_todo())
+		print(self.telnet.leer_todo())
